@@ -127,10 +127,12 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="CompilationEngine.cpp" />
     <ClCompile Include="JackAnalyzer.cpp" />
     <ClCompile Include="JackTokenizer.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="CompilationEngine.h" />
     <ClInclude Include="JackTokenizer.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
