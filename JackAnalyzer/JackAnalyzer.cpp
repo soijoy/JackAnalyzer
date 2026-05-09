@@ -15,8 +15,6 @@ void runTokenizer(std::string inputPath) {
 	CompilationEngine engine(&tokenizer, outFile);
 	engine.compileClass(); // クラスのコンパイルを開始
 
-
-    outFile << "<tokens>" << std::endl;
     while (tokenizer.hasMoreTokens()) {
         TokenType type = tokenizer.tokenType();
         if (type == TokenType::KEYWORD) {
@@ -37,7 +35,6 @@ void runTokenizer(std::string inputPath) {
         else {}
         tokenizer.advance();
     }
-    outFile << "</tokens>" << std::endl;
 }
 
 
