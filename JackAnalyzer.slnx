@@ -3,5 +3,5 @@
     <Platform Name="x64" />
     <Platform Name="x86" />
   </Configurations>
-  <Project Path="JackAnalyzer/JackAnalyzer.vcxproj" />
+  <Project Path="JackAnalyzer/JackAnalyzer.vcxproj" Id="47957ec9-2f72-4efb-8bc7-0daecdb6e663" />
 </Solution>
