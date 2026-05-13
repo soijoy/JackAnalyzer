@@ -2,7 +2,6 @@
 
 CompilationEngine::CompilationEngine(JackTokenizer* tokenizer, std::ofstream& outputFile)
     : tk(tokenizer), out(outputFile) {
-    // 準備完了
 }
 
 void CompilationEngine::process() {
