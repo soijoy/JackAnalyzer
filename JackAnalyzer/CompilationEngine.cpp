@@ -24,6 +24,7 @@ void CompilationEngine::process() {
 
 void CompilationEngine::compileClass() {
     process(); // classを処理
+    className = tk->getCurrentToken();
 	process(); // class名を処理
 	process(); // {を処理
 
@@ -66,18 +67,48 @@ void CompilationEngine::compileClassVarDec() {
 
 void CompilationEngine::compileSubroutine() {
 	symbolTable.startSubroutine(); // 新しいサブルーチンスコープを開始
+
+	std::string subroutineType = tk->getCurrentToken(); // constructor, function, method
     process(); // constructor, function, method
+
     process(); // type
+	std::string subroutineName = tk->getCurrentToken();
     process(); // subroutineName
+
     process(); // (
+    if (subroutineType == "method") {
+        // thisを登録
+        symbolTable.define("this", className, Kind::ARG);
+    }
     compileParameterList();
     process(); // )
     process(); // {
+
     while (tk->getCurrentToken() == "var") {
         compileVarDec();
     }
+    // ここでローカル変数の数が確定するので、function命令を出す
+    int nLocals = symbolTable.varCount(Kind::VAR);
+    vw.writeFunction(className + "." + subroutineName, nLocals);
+
+    // サブルーチンの種類に応じた初期化（プロローグ）
+    if (subroutineType == "constructor") {
+        // 1. クラス変数の数だけメモリを確保
+        int nFields = symbolTable.varCount(Kind::FIELD);
+        vw.writePush("constant", nFields);
+        vw.writeCall("Memory.alloc", 1);
+        // 2. 確保したメモリのアドレスを 'this' (pointer 0) にセット
+        vw.writePop("pointer", 0);
+    }
+    else if (subroutineType == "method") {
+        // メソッドは、渡された第1引数(this)を pointer 0 にセットして開始する
+        vw.writePush("argument", 0);
+        vw.writePop("pointer", 0);
+    }
+
+    // 本体の文を実行
     compileStatements();
-    process(); // }
+    process(); // '}'
 }
 
 void CompilationEngine::compileParameterList() {
@@ -236,14 +267,16 @@ void CompilationEngine::compileDo() {
 }
 
 void CompilationEngine::compileReturn() {
-    process(); // 'return'
+	process(); // 'return'
 
-    // 次が ';' でないなら、戻り値の「式」がある
-    if (tk->getCurrentToken() != ";") {
-        compileExpression();
-    }
-
-    process(); // ';'
+	if (tk->getCurrentToken() != ";") {
+		compileExpression(); // 戻り値の式を解析
+	}
+	else {
+		vw.writePush("constant", 0); // 戻り値がない場合は0を返す
+	}
+	process(); // ';'
+	vw.writeReturn();
 }
 
 void CompilationEngine::compileExpression() {

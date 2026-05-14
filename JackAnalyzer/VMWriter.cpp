@@ -3,36 +3,36 @@
 VMWriter::VMWriter(std::ofstream& outputFile) : out(outputFile) {
 }
 
-void VMWriter::writePush(const std::string& segment, int index) {
-    out << "push " << segment << " " << index << std::endl;
+void VMWriter::writePush(std::string segment, int index) {
+	out << "push " << segment << " " << index << std::endl;
 }
 
-void VMWriter::writePop(const std::string& segment, int index) {
+void VMWriter::writePop(std::string segment, int index) {
     out << "pop " << segment << " " << index << std::endl;
 }
 
-void VMWriter::writeArithmetic(const std::string& command) {
+void VMWriter::writeArithmetic(std::string command) {
     // add, sub, neg, eq, gt, lt, and, or, not
     out << command << std::endl;
 }
 
-void VMWriter::writeLabel(const std::string& label) {
+void VMWriter::writeLabel(std::string label) {
     out << "label " << label << std::endl;
 }
 
-void VMWriter::writeGoto(const std::string& label) {
+void VMWriter::writeGoto(std::string label) {
     out << "goto " << label << std::endl;
 }
 
-void VMWriter::writeIf(const std::string& label) {
+void VMWriter::writeIf(std::string label) {
     out << "if-goto " << label << std::endl;
 }
 
-void VMWriter::writeCall(const std::string& name, int nArgs) {
+void VMWriter::writeCall(std::string name, int nArgs) {
     out << "call " << name << " " << nArgs << std::endl;
 }
 
-void VMWriter::writeFunction(const std::string& name, int nLocals) {
+void VMWriter::writeFunction(std::string name, int nLocals) {
     out << "function " << name << " " << nLocals << std::endl;
 }
 

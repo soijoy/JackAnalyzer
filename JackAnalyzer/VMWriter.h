@@ -4,20 +4,20 @@
 
 class VMWriter {
 public:
-	// Construct with output file reference
-	explicit VMWriter(std::ofstream& outputFile);
+	// 出力先のファイルを指定して準備
+	VMWriter(std::ofstream& outputFile);
 
-	// VM command output functions
-	void writePush(const std::string& segment, int index);
-	void writePop(const std::string& segment, int index);
-	void writeArithmetic(const std::string& command);
-	void writeLabel(const std::string& label);
-	void writeGoto(const std::string& label);
-	void writeIf(const std::string& label);
-	void writeCall(const std::string& name, int nArgs);
-	void writeFunction(const std::string& name, int nLocals);
+	// VMコマンドを出力する関数群
+	void writePush(std::string segment, int index);
+	void writePop(std::string segment, int index);
+	void writeArithmetic(std::string command);
+	void writeLabel(std::string label);
+	void writeGoto(std::string label);
+	void writeIf(std::string label);
+	void writeCall(std::string name, int nArgs);
+	void writeFunction(std::string name, int nLocals);
 	void writeReturn();
 
 private:
-	std::ofstream& out;
+	std::ofstream& out; // 出力ファイルへの参照
 };
