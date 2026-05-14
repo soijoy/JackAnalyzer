@@ -12,7 +12,7 @@ public:
 
 	bool hasMoreTokens();
 	void advance();
-	TokenType tokenType(); // 現在のトークンの種類を返す
+	TokenType tokenType(); // Returns the type of the current token
 	std::string keyWord();
 	char symbol();
 	std::string identifier();

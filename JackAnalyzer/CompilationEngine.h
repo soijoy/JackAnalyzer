@@ -2,6 +2,8 @@
 #include <fstream>
 #include <string>
 #include "JackTokenizer.h"
+#include "SymbolTable.h"
+#include "VMWriter.h"
 
 class CompilationEngine {
 public:
@@ -22,14 +24,17 @@ public:
     void compileReturn();
     void compileExpression();
     void compileTerm();
-    void compileExpressionList();
+    int compileExpressionList();
     
     std::string getCurrentToken() const;
 
 private:
     JackTokenizer* tk;
     std::ofstream& out;
+    SymbolTable symbolTable;
+    VMWriter vw;
 
     // XML出力のためのヘルパー関数（あると便利！）
     void process(); // 現在のトークンをXML形式で書き出す
+    std::string kindToSegment(Kind kind);
 };

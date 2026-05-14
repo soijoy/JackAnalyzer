@@ -157,7 +157,9 @@ std::string JackTokenizer::stringVal() {
     // 最初と最後の " を除いた部分を抜き出す
     return t.substr(1, t.length() - 2);
 }
-
 std::string JackTokenizer::getCurrentToken() const {
-    return tokens[currentPos];
+    if (currentPos < tokens.size()) {
+        return tokens[currentPos];
+    }
+    return std::string();
 }

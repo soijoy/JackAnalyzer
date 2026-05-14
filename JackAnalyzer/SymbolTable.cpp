@@ -39,3 +39,27 @@ int SymbolTable::indexOf(std::string name) {
     }
     return -1; // 見つからない場合
 }
+
+Kind SymbolTable::kindOf(std::string name) {
+    if (subroutineSymbols.find(name) != subroutineSymbols.end()) {
+        return subroutineSymbols[name].kind;
+    }
+    if (classSymbols.find(name) != classSymbols.end()) {
+        return classSymbols[name].kind;
+    }
+    return Kind::NONE; // 見つからない場合
+}
+
+std::string SymbolTable::typeOf(std::string name) {
+    if (subroutineSymbols.find(name) != subroutineSymbols.end()) {
+        return subroutineSymbols[name].type;
+    }
+    if (classSymbols.find(name) != classSymbols.end()) {
+        return classSymbols[name].type;
+    }
+    return "";
+}
+
+int SymbolTable::varCount(Kind kind) {
+    return counts[kind];
+}

@@ -131,11 +131,13 @@
     <ClCompile Include="JackAnalyzer.cpp" />
     <ClCompile Include="JackTokenizer.cpp" />
     <ClCompile Include="SymbolTable.cpp" />
+    <ClCompile Include="VMWriter.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="CompilationEngine.h" />
     <ClInclude Include="JackTokenizer.h" />
     <ClInclude Include="SymbolTable.h" />
+    <ClInclude Include="VMWriter.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
