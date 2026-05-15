@@ -218,7 +218,7 @@ void CompilationEngine::compileLet() {
 
 void CompilationEngine::compileWhile() {
     std::string l1 = "WHILE_EXP" + std::to_string(labelIndex);
-    std::string l2 = "WHILE END" + std::to_string(labelIndex);
+    std::string l2 = "WHILE_END" + std::to_string(labelIndex);
     labelIndex++;
     vw.writeLabel(l1);
 
@@ -275,22 +275,36 @@ void CompilationEngine::compileDo() {
 	std::string name = tk->getCurrentToken();
     process(); // クラス名 または 変数名 または 関数名
 
+    std::string funcName = name;
+	int nArgs = 0;
+    
     if (tk->getCurrentToken() == ".") {
         process(); // '.'
-        name += ".";
-		name += tk->getCurrentToken();
+		std::string subName = tk->getCurrentToken();
         process(); // 関数名
+
+		Kind kind = symbolTable.kindOf(name);
+        if (kind != Kind::NONE) {
+			vw.writePush(kindToSegment(kind), symbolTable.indexOf(name)); // メソッド呼び出しのためのthisをプッシュ
+			funcName = symbolTable.typeOf(name) + "." + subName; // 変数名がクラス名になる
+			nArgs = 1; // メソッド呼び出しなので引数は1つ増える
+        }
+        else {
+			funcName = name + "." + subName; // クラス名.関数名
+        }
     }
     else {
-
+		vw.writePush("pointer", 0); // メソッド呼び出しのためのthisをプッシュ
+		funcName = className + "." + name; // 同じクラス内の関数呼び出し
+		nArgs = 1; // メソッド呼び出しなので引数は1つ増える
     }
 
     process(); // '('
-	int nArgs = compileExpressionList(); // 引数の解析
+	nArgs += compileExpressionList(); // 引数の解析
     process(); // ')'
     process(); // ';'
 
-    vw.writeCall(name, nArgs);
+    vw.writeCall(funcName, nArgs);
 	vw.writePop("temp", 0); // do文の戻り値は無視するのでtemp 0にpopして捨てる
 }
 
@@ -365,15 +379,13 @@ void CompilationEngine::compileTerm() {
         process();
 
 		vw.writePush("constant", str.length()); // 文字列の長さをプッシュ
-        vw.writeCall("string.new", 1);
+        vw.writeCall("String.new", 1);
 
         for (char c : str) {
 			vw.writePush("constant", (int)c); // 文字のASCIIコードをプッシュ
-            vw.writeCall("string.appendChar", 2);
+            vw.writeCall("String.appendChar", 2);
         }
 		
-		process(); // 文字列はそのまま
-
     } else if (t == "true" || t == "false" || t == "null" || t == "this") {
         // キーワード定数
         if (t == "false" || t == "null") {

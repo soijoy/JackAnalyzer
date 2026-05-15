@@ -21,7 +21,7 @@ void runTokenizer(std::string inputPath) {
 
 int main(int argc, char* argv[]) {
     if (argc != 2) {       // ファイル名が指定されているかチェック
-        std::cout << "Usage: JackAnalyzer <filename.jack>" << std::endl;
+        std::cout << "Usage: JackCompiler <filename.jack>" << std::endl;
         return 1;
     }
 

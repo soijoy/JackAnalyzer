@@ -24,6 +24,7 @@
     <ProjectGuid>{47957ec9-2f72-4efb-8bc7-0daecdb6e663}</ProjectGuid>
     <RootNamespace>JackAnalyzer</RootNamespace>
     <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
+    <ProjectName>JackCompiler</ProjectName>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
@@ -128,7 +129,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="CompilationEngine.cpp" />
-    <ClCompile Include="JackAnalyzer.cpp" />
+    <ClCompile Include="JackCompiler.cpp" />
     <ClCompile Include="JackTokenizer.cpp" />
     <ClCompile Include="SymbolTable.cpp" />
     <ClCompile Include="VMWriter.cpp" />
