@@ -16,7 +16,6 @@ void CompilationEngine::process() {
     else if (type == TokenType::STRING_CONST) tag = "stringConstant";
     else return; // NONEの場合は何もしない
 
-	
     if (tk->hasMoreTokens()) {
         tk->advance();
     }
@@ -191,6 +190,12 @@ void CompilationEngine::compileLet() {
         process();
         compileExpression();
         process();
+
+        // 左辺の配列のアドレスをプッシュ
+        Kind kind = symbolTable.kindOf(varName);
+        int index = symbolTable.indexOf(varName);
+        vw.writePush(kindToSegment(kind), index);
+		vw.writeArithmetic("add"); // ベースアドレス + インデックス
     }
 
 	process(); // '='
@@ -200,36 +205,58 @@ void CompilationEngine::compileLet() {
     if (!isArray) {
         Kind kind = symbolTable.kindOf(varName);
         int index = symbolTable.indexOf(varName);
-        std::string segment = kindToSegment(kind);
-
-        vw.writePop(segment, index);
+        vw.writePop(kindToSegment(kind), index);
     }
     else {
-
+        // 配列への代入
+        vw.writePop("temp", 0); // 右辺の値をスタックに残す
+		vw.writePop("pointer", 1); // THATをターゲットアドレスにセット
+		vw.writePush("temp", 0); // 右辺の値を再度スタックに戻す
+		vw.writePop("that", 0); // THAT 0(a[i]) に値を格納
     }
 }
 
 void CompilationEngine::compileWhile() {
+    std::string l1 = "WHILE_EXP" + std::to_string(labelIndex);
+    std::string l2 = "WHILE END" + std::to_string(labelIndex);
+    labelIndex++;
+    vw.writeLabel(l1);
 
     process(); // 'while'
     process(); // '('
     compileExpression(); // 継続条件（式）を解析
     process(); // ')'
 
+	vw.writeArithmetic("not");
+	vw.writeIf(l2);
+
     process(); // '{'
     compileStatements(); // ループ内の中身（文）を再帰的に解析
     process(); // '}'
+
+    vw.writeGoto(l1);
+    vw.writeLabel(l2);
 }
 
 void CompilationEngine::compileIf() {
+	std::string l1 = "IF_FALSE" + std::to_string(labelIndex);
+	std::string l2 = "IF_END" + std::to_string(labelIndex);
+	labelIndex++;
+
     process(); // 'if'
     process(); // '('
     compileExpression(); // 条件式を解析
     process(); // ')'
 
+	vw.writeArithmetic("not");
+	vw.writeIf(l1);
+
     process(); // '{'
     compileStatements(); // if内の中身を解析
     process(); // '}'
+
+    vw.writeGoto(l2);
+    vw.writeLabel(l1);
 
     // 次のトークンが 'else' なら、else節も解析する
     if (tk->getCurrentToken() == "else") {
@@ -238,6 +265,7 @@ void CompilationEngine::compileIf() {
         compileStatements(); // else内の中身を解析
         process(); // '}'
     }
+    vw.writeLabel(l2);
 }
 
 void CompilationEngine::compileDo() {
@@ -332,9 +360,20 @@ void CompilationEngine::compileTerm() {
 		process(); // 数値はそのまま
 
     } else if (type == TokenType::STRING_CONST) {
-        // 文字列定数 push constant x
+        // 文字列定数
+        std::string str = tk->stringVal();
+        process();
+
+		vw.writePush("constant", str.length()); // 文字列の長さをプッシュ
+        vw.writeCall("string.new", 1);
+
+        for (char c : str) {
+			vw.writePush("constant", (int)c); // 文字のASCIIコードをプッシュ
+            vw.writeCall("string.appendChar", 2);
+        }
 		
 		process(); // 文字列はそのまま
+
     } else if (t == "true" || t == "false" || t == "null" || t == "this") {
         // キーワード定数
         if (t == "false" || t == "null") {
@@ -367,8 +406,51 @@ void CompilationEngine::compileTerm() {
             process(); // '['
             compileExpression();
 			process(); // ']'
+
+            // 配列のベースアドレスをプッシュ
+            Kind kind = symbolTable.kindOf(name);
+            int index = symbolTable.indexOf(name);
+            vw.writePush(kindToSegment(kind), index);
+
+			vw.writeArithmetic("add"); // ベースアドレス＋インデックスを計算
+            vw.writePop("pointer", 1); // thatに1をセット
+			vw.writePush("that", 0); // 配列の値をスタックにプッシュ
+
         } else if (next == "(" || next == ".") {
             // サブルーチン呼び出し
+            std::string funcName = name;
+			int nArgs = 0;
+
+            if (next == ".") {
+                // オブジェクト名.メソッド名あるいはクラス名.関数名
+                process();
+                std::string subName = tk->getCurrentToken();
+                process();
+
+                // nameがオブジェクトかどうか確認
+                Kind kind = symbolTable.kindOf(name);
+                if (kind != Kind::NONE) {
+                    vw.writePush(kindToSegment(kind), symbolTable.indexOf(name));
+                    funcName = symbolTable.typeOf(name) + "." + subName; // クラス名.メソッド名
+                    nArgs = 1; // オブジェクトを引数として渡す
+                }
+                else {
+                    funcName = name + "." + subName; // クラス名.関数名
+
+                }
+            }
+            else {
+				// .がない場合は同じクラス内の関数呼び出しとみなす
+                vw.writePush("pointer", 0);
+                funcName = className + "." + name;
+				nArgs = 1;
+            }
+
+			process(); // '('
+			nArgs += compileExpressionList();
+			process(); // ')'
+			vw.writeCall(funcName, nArgs);
+
         } else {
 			// 変数
 			Kind kind = symbolTable.kindOf(name);

@@ -34,6 +34,7 @@ private:
     SymbolTable symbolTable;
     VMWriter vw;
     std::string className;
+	int labelIndex = 0; 
 
     // XML出力のためのヘルパー関数（あると便利！）
     void process(); // 現在のトークンをXML形式で書き出す
